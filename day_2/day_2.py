@@ -73,6 +73,15 @@ def get_sum_of_possible_game_ids(game_strs: list[str], max_red: int, max_green: 
     return id_sum
 
 
+def get_minimum_possible_cubes(game_strs: list[str]) -> int:
+    games = parse_game_strs(game_strs)
+    cub_power_sum = 0
+    for game in games:
+        power = game.get_max_red_count() * game.get_max_green_count() * game.get_max_blue_count()
+        cub_power_sum += power
+    return cub_power_sum
+
+
 def parse_game_strs(game_strs: list[str]) -> list[Game]:
     games = []
     for game_str in game_strs:
@@ -85,3 +94,4 @@ if __name__ == "__main__":
     with open("input.txt", "r") as file:
         lines = file.readlines()
     print(get_sum_of_possible_game_ids(lines, max_red=12, max_green=13, max_blue=14))
+    print(get_minimum_possible_cubes(lines))
