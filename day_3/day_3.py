@@ -133,7 +133,6 @@ def find_gears(engine_schematic: np.ndarray) -> list[Gear]:
     return gears
 
 
-
 if __name__ == "__main__":
     with open("input.txt", "r") as file:
         content = file.read()
