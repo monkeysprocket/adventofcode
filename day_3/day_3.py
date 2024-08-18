@@ -1,21 +1,41 @@
 import numpy as np
 
 
+class PartNumber:
+    def __init__(self, row: int, slice_start: int, slice_end: int, value: int) -> None:
+        self.row = row
+        self.slice_start = slice_start
+        self.slice_end = slice_end
+        self.value = value
+
+    def has_adjacent_symbol(self, engine_schematic: np.ndarray) -> bool:
+        adjacent_characters = self._get_adjacent_characters(engine_schematic)
+        print(adjacent_characters)
+        return symbols_present_in_array(adjacent_characters)
+
+    def _get_adjacent_characters(self, engine_schematic: np.ndarray) -> np.ndarray:
+        column_start = max(self.slice_start - 1, 0)
+        column_end = min(self.slice_end + 1, engine_schematic.shape[1]) + 1
+        row_start = max(self.row - 1, 0)
+        row_end = min(self.row + 1, engine_schematic.shape[0]) + 1
+        return engine_schematic[row_start:row_end, column_start:column_end]
+
+
 def get_part_number_sum(engine_schematic_str: str) -> int:
     engine_schematic = input_str_to_array(engine_schematic_str)
     part_numbers = find_part_numbers(engine_schematic)
-    return sum(part_numbers)
+    return sum([p.value for p in part_numbers if p.has_adjacent_symbol(engine_schematic)])
 
 
 def input_str_to_array(input_str: str) -> np.ndarray:
     return np.array([list(row) for row in input_str.split("\n")])
 
 
-def find_part_numbers(engine_schematic: np.ndarray) -> list[int]:
+def find_part_numbers(engine_schematic: np.ndarray) -> list[PartNumber]:
     schematic_width = engine_schematic.shape[1]
     schematic_height = engine_schematic.shape[0]
     print(f"{schematic_width=} {schematic_height=}")
-    part_numbers: list[int] = []
+    part_numbers: list[PartNumber] = []
     for row in range(schematic_height):
         start_index = None
         end_index = None
@@ -33,18 +53,13 @@ def find_part_numbers(engine_schematic: np.ndarray) -> list[int]:
                 end_index = column
             if start_index is not None and end_index is not None:
                 print(f"found number from {start_index}:{end_index}")
-                column_start = max(start_index - 1, 0)
-                column_end = min(end_index + 1, schematic_width) + 1
-                row_start = max(row - 1, 0)
-                row_end = min(row + 1, schematic_height) + 1
-                adjacent_characters = engine_schematic[row_start:row_end, column_start:column_end]
-                print(adjacent_characters)
-                if symbols_present_in_array(adjacent_characters):
-                    part_number = get_part_number(engine_schematic[row, start_index:end_index + 1])
-                    print(f"found part number: {part_number}")
-                    part_numbers.append(part_number)
-                else:
-                    print(f"found dummy number: {get_part_number(engine_schematic[row, start_index:end_index + 1])}")
+                number = PartNumber(
+                    row=row,
+                    slice_start=start_index,
+                    slice_end=end_index,
+                    value=get_part_number(engine_schematic[row, start_index:end_index + 1])
+                )
+                part_numbers.append(number)
                 start_index = None
                 end_index = None
     return part_numbers
