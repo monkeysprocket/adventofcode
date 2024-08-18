@@ -21,6 +21,29 @@ class PartNumber:
         return engine_schematic[row_start:row_end, column_start:column_end]
 
 
+class Gear:
+    def __init__(self, row: int, column: int) -> None:
+        self.row = row
+        self.column = column
+        self.adjacent_part_numbers: list[PartNumber] = []
+
+    def is_valid_gear(self) -> bool:
+        return len(self.adjacent_part_numbers) == 2
+
+    def check_if_part_number_is_adjacent(self, part_number: PartNumber) -> bool:
+        return (
+                (self.row - 1 <= part_number.row <= self.row + 1)
+                and
+                (self.column in range(part_number.slice_start - 1, part_number.slice_end + 2, 1))
+        )
+
+    def get_gear_ratio(self) -> int:
+        if self.is_valid_gear():
+            return self.adjacent_part_numbers[0].value * self.adjacent_part_numbers[1].value
+        else:
+            return 0
+
+
 def get_part_number_sum(engine_schematic_str: str) -> int:
     engine_schematic = input_str_to_array(engine_schematic_str)
     part_numbers = find_part_numbers(engine_schematic)
@@ -87,8 +110,33 @@ def get_part_number(array: np.ndarray) -> int:
     return int(part_number_str)
 
 
+def find_gear_ratio_sum(engine_schematic_str: str) -> int:
+    engine_schematic = input_str_to_array(engine_schematic_str)
+    part_numbers = find_part_numbers(engine_schematic)
+    gears = find_gears(engine_schematic)
+    for gear in gears:
+        for part_number in part_numbers:
+            if gear.check_if_part_number_is_adjacent(part_number):
+                gear.adjacent_part_numbers.append(part_number)
+    return sum([g.get_gear_ratio() for g in gears])
+
+
+def find_gears(engine_schematic: np.ndarray) -> list[Gear]:
+    print(engine_schematic.shape)
+    result = np.where(engine_schematic == "*")
+    print(result)
+    gears = []
+    for x, y in zip(result[0], result[1]):
+        print(x, y)
+        print(engine_schematic[x, y])
+        gears.append(Gear(x, y))
+    return gears
+
+
+
 if __name__ == "__main__":
     with open("input.txt", "r") as file:
         content = file.read()
-    print(sorted("".join(set(content))))
-    print(get_part_number_sum(content))
+    # print(sorted("".join(set(content))))
+    # print(get_part_number_sum(content))
+    print(find_gear_ratio_sum(content))
